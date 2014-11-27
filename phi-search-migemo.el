@@ -26,20 +26,19 @@
 ;; This script provides "phi-search"-based Japanese incremental
 ;; search, powered by "migemo".
 
-;; phi-search, migemo をインストールし、このファイルをロードすると、
-;;
-;;   (require 'phi-search-migemo)
-;;
-;; "M-x phi-search-migemo-toggle" で migemo の有効/無効を切り替えること
-;; ができます。 phi-search-default-map にキーバインドを追加しておいても
-;; 便利です。
+;; phi-search, migemo をインストールしこのファイルをロードすると、"M-x
+;; phi-search-migemo-toggle" で migemo の有効/無効を切り替えることがで
+;; きます。 phi-search-default-map にキーバインドを追加しておいても便利
+;; です。
 ;;
 ;;   (define-key phi-search-default-map (kbd "M-m") 'phi-search-toggle-migemo)
 ;;
 ;; "phi-search-migemo", "phi-search-migemo-backward" は、 phi-search を
 ;; 起動し migemo を有効にするところまでをひとまとめにしたコマンドです。
 ;; migemo がデフォルトで有効になっていて欲しい場合は、 "phi-search",
-;; "phi-search-backward" の代わりにこれらの関数を使うと便利です。
+;; "phi-search-backward" の代わりにこれらの関数を使うと便利です。たんに
+;; 正規表現で検索をしたい場合は、前置引数を渡すことで migemo を無効のま
+;; ま起動することもできます。
 
 ;;; Change Log:
 
@@ -68,12 +67,13 @@
     (error "phi-search が実行されていません。"))
   (phi-search--with-target-buffer
    (cond (phi-search-migemo--saved-convert-fn
-          (setq phi-search-migemo--saved-convert-fn)
-          (setq phi-search--convert-query-function 'migemo-get-pattern))
-         (t
           (setq phi-search--convert-query-function
                 phi-search-migemo--saved-convert-fn)
-          (setq phi-search-migemo--saved-convert-fn nil))))
+          (setq phi-search-migemo--saved-convert-fn nil))
+         (t
+          (setq phi-search-migemo--saved-convert-fn
+                phi-search--convert-query-function)
+          (setq phi-search--convert-query-function 'migemo-get-pattern))))
   (phi-search--update))
 
 ;;;###autoload
