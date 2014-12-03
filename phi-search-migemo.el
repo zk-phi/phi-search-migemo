@@ -19,7 +19,7 @@
 ;; Author: zk_phi
 ;; URL: http://hins11.yu-yake.com/
 ;; Version: 1.0.0
-;; Package-Requires: ((phi-search "2.1.1"))
+;; Package-Requires: ((phi-search "2.1.1") (migemo "1.9.1"))
 
 ;;; Commentary:
 
