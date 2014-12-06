@@ -65,21 +65,22 @@
   (interactive)
   (unless (string= (buffer-name) "*phi-search*")
     (error "phi-search が実行されていません。"))
-  (phi-search--with-target-buffer
-   (cond (phi-search-migemo--saved-convert-fn
-          (setq phi-search--convert-query-function
-                phi-search-migemo--saved-convert-fn)
-          (setq phi-search-migemo--saved-convert-fn nil))
-         (t
-          (setq phi-search-migemo--saved-convert-fn
-                phi-search--convert-query-function)
-          (setq phi-search--convert-query-function 'migemo-get-pattern))))
+  (cond (phi-search-migemo--saved-convert-fn
+         (setq phi-search--convert-query-function
+               phi-search-migemo--saved-convert-fn)
+         (setq phi-search-migemo--saved-convert-fn nil))
+        (t
+         (setq phi-search-migemo--saved-convert-fn
+               phi-search--convert-query-function)
+         (setq phi-search--convert-query-function 'migemo-get-pattern)))
   (phi-search--update))
 
 ;;;###autoload
 (defun phi-search-migemo (&optional disable-migemo)
   "migemo が有効な状態で phi-search を起動します。"
   (interactive "P")
+  (when (use-region-p)
+    (setq disable-migemo t))
   (phi-search)
   (unless disable-migemo
     (phi-search-migemo-toggle)))
@@ -88,6 +89,8 @@
 (defun phi-search-migemo-backward (&optional disable-migemo)
   "migemo が有効な状態で phi-search-backward を起動します。"
   (interactive "P")
+  (when (use-region-p)
+    (setq disable-migemo t))
   (phi-search-backward)
   (unless disable-migemo
     (phi-search-migemo-toggle)))
