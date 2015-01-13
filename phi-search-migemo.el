@@ -1,6 +1,6 @@
 ;;; phi-search-migemo.el --- migemo extension for phi-search
 
-;; Copyright (C) 2014 zk_phi
+;; Copyright (C) 2014-2015 zk_phi
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@
   "migemo の有効/無効を切り替えます。 phi-search ウィンドウ内で実
 行してください。"
   (interactive)
-  (unless (string= (buffer-name) "*phi-search*")
+  (unless phi-search--target
     (error "phi-search が実行されていません。"))
   (cond (phi-search-migemo--saved-convert-fn
          (setq phi-search--convert-query-function
@@ -81,9 +81,12 @@
   (interactive "P")
   (when (use-region-p)
     (setq disable-migemo t))
-  (phi-search)
-  (unless disable-migemo
-    (phi-search-migemo-toggle)))
+  (let ((phi-search-hook
+         (cons (lambda ()
+                 (unless disable-migemo
+                   (phi-search-migemo-toggle)))
+               phi-search-hook)))
+    (phi-search)))
 
 ;;;###autoload
 (defun phi-search-migemo-backward (&optional disable-migemo)
@@ -91,9 +94,12 @@
   (interactive "P")
   (when (use-region-p)
     (setq disable-migemo t))
-  (phi-search-backward)
-  (unless disable-migemo
-    (phi-search-migemo-toggle)))
+  (let ((phi-search-hook
+         (cons (lambda ()
+                 (unless disable-migemo
+                   (phi-search-migemo-toggle)))
+               phi-search-hook)))
+    (phi-search-backward)))
 
 (provide 'phi-search-migemo)
 
