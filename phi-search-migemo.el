@@ -18,8 +18,8 @@
 
 ;; Author: zk_phi
 ;; URL: http://hins11.yu-yake.com/
-;; Version: 1.0.0
-;; Package-Requires: ((phi-search "2.1.1") (migemo "1.9.1"))
+;; Version: 1.1.0
+;; Package-Requires: ((phi-search "2.2.0") (migemo "1.9.1"))
 
 ;;; Commentary:
 
@@ -43,20 +43,27 @@
 ;;; Change Log:
 
 ;; 1.0.0 first release
+;; 1.1.0 implement naive cahching
 
 ;;; Code:
 
 (require 'migemo)
 (require 'phi-search-core)
 
-(defconst phi-search-migemo-version "1.0.0")
+(defconst phi-search-migemo-version "1.1.0")
 
 (defgroup phi-search-migemo nil
   "migemo extension for phi-search"
   :group 'phi-search)
 
-(defvar phi-search-migemo--saved-convert-fn nil)
-(make-variable-buffer-local 'phi-search-migemo--saved-convert-fn)
+(defvar phi-search-migemo--last-query nil)
+(defun phi-search-migemo--get-pattern (query)
+  (if (and phi-search-migemo--last-query
+           (string= (car phi-search-migemo--last-query) query))
+      (cdr phi-search-migemo--last-query)
+    (let ((pat (migemo-get-pattern query)))
+      (setq phi-search-migemo--last-query (cons query pat))
+      pat)))
 
 ;;;###autoload
 (defun phi-search-migemo-toggle ()
@@ -65,41 +72,30 @@
   (interactive)
   (unless phi-search--target
     (error "phi-search が実行されていません。"))
-  (cond (phi-search-migemo--saved-convert-fn
-         (setq phi-search--convert-query-function
-               phi-search-migemo--saved-convert-fn)
-         (setq phi-search-migemo--saved-convert-fn nil))
-        (t
-         (setq phi-search-migemo--saved-convert-fn
-               phi-search--convert-query-function)
-         (setq phi-search--convert-query-function 'migemo-get-pattern)))
+  (setq phi-search--convert-query-function
+        (unless phi-search--convert-query-function
+          'phi-search-migemo--get-pattern))
   (phi-search--update))
 
 ;;;###autoload
 (defun phi-search-migemo (&optional disable-migemo)
   "migemo が有効な状態で phi-search を起動します。"
   (interactive "P")
-  (when (use-region-p)
-    (setq disable-migemo t))
-  (let ((phi-search-hook
-         (cons (lambda ()
-                 (unless disable-migemo
-                   (phi-search-migemo-toggle)))
-               phi-search-hook)))
-    (phi-search)))
+  (if (or disable-migemo (use-region-p))
+      (phi-search)
+    (let ((phi-search-hook
+           (cons 'phi-search-migemo-toggle phi-search-hook)))
+      (phi-search))))
 
 ;;;###autoload
 (defun phi-search-migemo-backward (&optional disable-migemo)
   "migemo が有効な状態で phi-search-backward を起動します。"
   (interactive "P")
-  (when (use-region-p)
-    (setq disable-migemo t))
-  (let ((phi-search-hook
-         (cons (lambda ()
-                 (unless disable-migemo
-                   (phi-search-migemo-toggle)))
-               phi-search-hook)))
-    (phi-search-backward)))
+  (if (or disable-migemo (use-region-p))
+      (phi-search-backward)
+    (let ((phi-search-hook
+           (cons 'phi-search-migemo-toggle phi-search-hook)))
+      (phi-search-backward))))
 
 (provide 'phi-search-migemo)
 
