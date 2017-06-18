@@ -61,9 +61,11 @@
   (if (and phi-search-migemo--last-query
            (string= (car phi-search-migemo--last-query) query))
       (cdr phi-search-migemo--last-query)
-    (let ((pat (migemo-get-pattern query)))
-      (setq phi-search-migemo--last-query (cons query pat))
-      pat)))
+    (condition-case nil
+        (let ((pat (migemo-get-pattern query)))
+          (setq phi-search-migemo--last-query (cons query pat))
+          pat)
+      (error query))))
 
 ;;;###autoload
 (defun phi-search-migemo-toggle ()
